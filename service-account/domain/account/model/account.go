@@ -84,3 +84,10 @@ type GenerateToken struct {
 type Token struct {
 	Token string `json:"token"`
 }
+
+type Mutasi struct {
+	TanggalTransaksi time.Time `json:"tanggal_transaksi"`
+	NoRekening       int64     `json:"no_rekening"`
+	JenisTransaksi   string    `json:"jenis_transaksi"`
+	Nominal          int64     `json:"nominal"`
+}

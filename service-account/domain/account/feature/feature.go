@@ -136,6 +136,13 @@ func (t *accountFeature) SavingFeature(ctx context.Context, request model.Saving
 		NominalDebit:     0,
 	})
 
+	go t.SendMutasi(ctx, model.Mutasi{
+		TanggalTransaksi: time.Now(),
+		NoRekening:       data.NoRekening,
+		JenisTransaksi:   constant.CREDIT,
+		Nominal:          request.Nominal,
+	})
+
 	return
 }
 
@@ -190,6 +197,13 @@ func (t *accountFeature) WitdrawalFeature(ctx context.Context, request model.Wit
 		NoRekeningDebit:  data.NoRekening,
 		NominalKredit:    0,
 		NominalDebit:     request.Nominal,
+	})
+
+	go t.SendMutasi(ctx, model.Mutasi{
+		TanggalTransaksi: time.Now(),
+		NoRekening:       data.NoRekening,
+		JenisTransaksi:   constant.DEBIT,
+		Nominal:          request.Nominal,
 	})
 	return
 }
@@ -409,5 +423,17 @@ func (t *accountFeature) ShortRunningScript(ctx context.Context) {
 		fmt.Println("-------------- END SHORT SCRIPT ----------------")
 		time.Sleep(1 * time.Minute)
 	}
+}
 
+func (t *accountFeature) SendMutasi(ctx context.Context, request model.Mutasi) {
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		fmt.Println("Error serializing data:", err)
+		return
+	}
+	err = t.redis.Set(ctx, "insert-mutasi", string(jsonData), 1*time.Second).Err()
+	if err != nil {
+		fmt.Println("Error setting key:", err)
+		return
+	}
 }
